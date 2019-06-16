@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: UTF-8 -*-
 
-import os, shutil
+import os
 from conans import AutoToolsBuildEnvironment, CMake, ConanFile, tools
 
 
@@ -137,7 +137,7 @@ class LibarchiveConan(ConanFile):
         else:
             args.extend(["--enable-static", "--disable-shared"])
         host = None
-        vars = None
+        build_vars = None
         if self.settings.os == "Android":
             toolchain = os.path.join(os.environ["ANDROID_HOME"], "ndk-bundle",
                                      "toolchains", "llvm", "prebuilt",
@@ -145,7 +145,7 @@ class LibarchiveConan(ConanFile):
             if self.settings.arch == "armv7":
                 host = "armv7a-linux-androideabi"
                 cmd_prefix = "arm-linux-androideabi"
-            vars = {
+            build_vars = {
                 "AR":
                 os.path.join(toolchain, cmd_prefix + "-ar"),
                 "AS":
@@ -158,6 +158,9 @@ class LibarchiveConan(ConanFile):
                 os.path.join(
                     toolchain, "{}{}-clang++".format(
                         host, self.settings.os.api_level)),
+                "CPPFLAGS":
+                "-I" + os.path.join(self.source_folder, self._folder_name,
+                                    "contrib", "android", "include"),
                 "LD":
                 os.path.join(toolchain, cmd_prefix + "-ld"),
                 "RANLIB":
@@ -168,7 +171,7 @@ class LibarchiveConan(ConanFile):
         elif self.settings.os == "iOS":
             iphoneos = tools.XCRun(self.settings, sdk="iphoneos")
             flags = "-arch armv7 -arch armv7s -arch arm64 -isysroot " + iphoneos.sdk_path
-            vars = {
+            build_vars = {
                 "AR": iphoneos.ar,
                 "CC": iphoneos.cc,
                 "CXX": iphoneos.cxx,
@@ -177,7 +180,10 @@ class LibarchiveConan(ConanFile):
                 "CXXFLAGS": flags,
             }
         build.configure(
-            configure_dir=self._folder_name, args=args, host=host, vars=vars)
+            configure_dir=self._folder_name,
+            args=args,
+            host=host,
+            vars=build_vars)
         build.make()
         build.install()
 
