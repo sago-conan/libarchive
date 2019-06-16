@@ -14,6 +14,7 @@ macOS: &macOS
     - brew install pyenv-virtualenv
     - pyenv install 3.7.3
     - pyenv rehash
+    - eval "$(pyenv init -)"
     - pyenv virtualenv 3.7.3 venv
     - pyenv activate venv
 
@@ -25,11 +26,12 @@ matrix:
           - tools
           - platform-tools
       before_install:
-        - echo y | sdkmanager "ndk-bundle"
+        - echo y | sdkmanager "cmake;3.10.2.4988404" "ndk-bundle"
         - virtualenv -p python3 venv
         - source venv/bin/activate
       before_script:
         - export CONAN_BASE_PROFILE="$(pwd)/profile/Android.profile"
+        - export PATH="$ANDROID_HOME/cmake/3.10.2.4988404/bin:$PATH"
       env:
         - CONAN_ARCHS="armv7"
         - CONAN_CLANG_VERSIONS="7.0"
