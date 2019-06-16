@@ -84,7 +84,7 @@ class LibarchiveConan(ConanFile):
         search = "INCLUDE_DIRECTORIES(BEFORE ${CMAKE_CURRENT_SOURCE_DIR}/libarchive)\n"
         append = (
             "IF(ANDROID)\n"
-            "  INCLUDE_DIRECTORIES(BEFORE ${CMAKE_CURRENT_SOURCE_DIR}/contrib/android/config)\n"
+            "  INCLUDE_DIRECTORIES(BEFORE ${CMAKE_CURRENT_SOURCE_DIR}/contrib/android/include)\n"
             "ENDIF(ANDROID)\n")
         tools.replace_in_file(
             os.path.join(self._folder_name, "CMakeLists.txt"), search,
