@@ -14,7 +14,6 @@ class LibarchiveConan(ConanFile):
     description = "Multi-format archive and compression library."
     settings = "arch", "build_type", "compiler", "os"
     options = {
-        "shared": [True, False],
         "fPIC": [True, False],
         "enable_nettle": [True, False],
         "enable_openssl": [True, False],
@@ -39,7 +38,6 @@ class LibarchiveConan(ConanFile):
         "enable_iconv": [True, False],
     }
     default_options = {
-        "shared": False,
         "fPIC": True,
         "enable_nettle": True,
         "enable_openssl": True,
