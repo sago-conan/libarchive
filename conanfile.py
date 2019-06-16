@@ -2,7 +2,7 @@
 # -*- coding: UTF-8 -*-
 
 import os, shutil
-from conans import CMake, ConanFile, tools
+from conans import AutoToolsBuildEnvironment, CMake, ConanFile, tools
 
 
 class LibarchiveConan(ConanFile):
@@ -14,6 +14,7 @@ class LibarchiveConan(ConanFile):
     description = "Multi-format archive and compression library."
     settings = "arch", "build_type", "compiler", "os"
     options = {
+        "shared": [True, False],
         "fPIC": [True, False],
         "enable_nettle": [True, False],
         "enable_openssl": [True, False],
@@ -38,6 +39,7 @@ class LibarchiveConan(ConanFile):
         "enable_iconv": [True, False],
     }
     default_options = {
+        "shared": False,
         "fPIC": True,
         "enable_nettle": False,
         "enable_openssl": False,
@@ -90,7 +92,7 @@ class LibarchiveConan(ConanFile):
             os.path.join(self._folder_name, "CMakeLists.txt"), search,
             search + append)
 
-    def build(self):
+    def _build_cmake(self):
         cmake = CMake(self)
         # Build options
         options = [
@@ -121,3 +123,66 @@ class LibarchiveConan(ConanFile):
         cmake.configure(source_folder=self._folder_name)
         cmake.build()
         cmake.install()
+
+    def _build_autotools(self):
+        build = AutoToolsBuildEnvironment(self)
+        args = [
+            "--disable-bsdcat", "--disable-bsdcpio", "--disable-bsdtar",
+            "--without-xml2"
+        ]
+        if "fPIC" in self.options and self.options.fPIC:
+            args.append("--with-pic")
+        if self.options.shared:
+            args.extend(["--disable-static", "--enable-shared"])
+        else:
+            args.extend(["--enable-static", "--disable-shared"])
+        host = None
+        vars = None
+        if self.settings.os == "Android":
+            toolchain = os.path.join(os.environ["ANDROID_HOME"], "ndk-bundle",
+                                     "toolchains", "llvm", "prebuilt",
+                                     "linux-x86_64", "bin")
+            if self.settings.arch == "armv7":
+                host = "armv7a-linux-androideabi"
+                cmd_prefix = "arm-linux-androideabi"
+            vars = {
+                "AR":
+                os.path.join(toolchain, cmd_prefix + "-ar"),
+                "AS":
+                os.path.join(toolchain, cmd_prefix + "-as"),
+                "CC":
+                os.path.join(
+                    toolchain,
+                    "{}{}-clang".format(host, self.settings.os.api_level)),
+                "CXX":
+                os.path.join(
+                    toolchain, "{}{}-clang++".format(
+                        host, self.settings.os.api_level)),
+                "LD":
+                os.path.join(toolchain, cmd_prefix + "-ld"),
+                "RANLIB":
+                os.path.join(toolchain, cmd_prefix + "-ranlib"),
+                "STRIP":
+                os.path.join(toolchain, cmd_prefix + "-strip"),
+            }
+        elif self.settings.os == "iOS":
+            iphoneos = tools.XCRun(self.settings, sdk="iphoneos")
+            flags = "-arch armv7 -arch armv7s -arch arm64 -isysroot " + iphoneos.sdk_path
+            vars = {
+                "AR": iphoneos.ar,
+                "CC": iphoneos.cc,
+                "CXX": iphoneos.cxx,
+                "LD": iphoneos.find("ld"),
+                "CFLAGS": flags,
+                "CXXFLAGS": flags,
+            }
+        build.configure(
+            configure_dir=self._folder_name, args=args, host=host, vars=vars)
+        build.make()
+        build.install()
+
+    def build(self):
+        if self.settings.compiler == "Visual Studio":
+            self._build_cmake()
+        else:
+            self._build_autotools()
