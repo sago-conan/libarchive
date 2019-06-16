@@ -80,6 +80,15 @@ class LibarchiveConan(ConanFile):
         url = "https://www.libarchive.org/downloads/{}.tar.gz".format(
             self._folder_name)
         tools.get(url)
+        # Patch for Android
+        search = "INCLUDE_DIRECTORIES(BEFORE ${CMAKE_CURRENT_SOURCE_DIR}/libarchive)\n"
+        append = (
+            "IF(ANDROID)\n"
+            "  INCLUDE_DIRECTORIES(BEFORE ${CMAKE_CURRENT_SOURCE_DIR}/contrib/android/config)\n"
+            "ENDIF(ANDROID)\n")
+        tools.replace_in_file(
+            os.path.join(self._folder_name, "CMakeLists.txt"), search,
+            search + append)
 
     def build(self):
         cmake = CMake(self)
