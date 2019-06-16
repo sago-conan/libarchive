@@ -34,7 +34,7 @@ matrix:
         - export PATH="$ANDROID_HOME/cmake/3.10.2.4988404/bin:$PATH"
       env:
         - CONAN_ARCHS="armv7"
-        - CONAN_CLANG_VERSIONS="8.0"
+        - CONAN_CLANG_VERSIONS="8"
 
     - <<: *macOS
       before_script:
