@@ -1,0 +1,13 @@
+diff --git a/libarchive/archive_read_disk_posix.c b/libarchive/archive_read_disk_posix.c
+index cdf7541..c859369 100644
+--- a/libarchive/archive_read_disk_posix.c
++++ b/libarchive/archive_read_disk_posix.c
+@@ -1800,7 +1800,7 @@ setup_current_filesystem(struct archive_read_disk *a)
+ #if defined(HAVE_STATVFS)
+ 	if (svfs.f_flag & ST_NOATIME)
+ #else
+-	if (sfs.f_flag & ST_NOATIME)
++	if (sfs.f_flags & ST_NOATIME)
+ #endif
+ 		t->current_filesystem->noatime = 1;
+ 	else

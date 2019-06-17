@@ -64,7 +64,7 @@ class LibarchiveConan(ConanFile):
         "enable_iconv": False,
     }
     generators = "cmake_find_package"
-    exports_sources = "ios.toolchain.cmake"
+    exports_sources = "ios.toolchain.cmake", "libarchive.patch"
 
     def config_options(self):
         if self.settings.os == "Windows":
@@ -83,14 +83,7 @@ class LibarchiveConan(ConanFile):
             self._folder_name)
         tools.get(url)
         # Patch for Android
-        search = "INCLUDE_DIRECTORIES(BEFORE ${CMAKE_CURRENT_SOURCE_DIR}/libarchive)\n"
-        append = (
-            "IF(ANDROID)\n"
-            "  INCLUDE_DIRECTORIES(BEFORE ${CMAKE_CURRENT_SOURCE_DIR}/contrib/android/include)\n"
-            "ENDIF(ANDROID)\n")
-        tools.replace_in_file(
-            os.path.join(self._folder_name, "CMakeLists.txt"), search,
-            search + append)
+        tools.patch(base_path=self._folder_name, patch_file="libarchive.patch")
 
     def _build_cmake(self):
         cmake = CMake(self)
