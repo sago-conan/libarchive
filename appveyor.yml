@@ -5,7 +5,7 @@ environment:
 
   CONAN_USERNAME: "sago"
   CONAN_CHANNEL: "testing"
-  CONAN_UPLOAD: "https://api.bintray.com/conan/suwei-air/sago-conan"
+  CONAN_UPLOAD: "https://api.bintray.com/conan/suwei-air/sago-conan@False"
   CONAN_STABLE_BRANCH_PATTERN: "master"
   CONAN_ARCHS: "x86"
   CONAN_BUILD_TYPES: "Release"
